@@ -1,31 +1,56 @@
-# CP5 — Cấu hình deploy Render (dùng nếu bạn chọn Render).
-#
-# Render đọc file này khi bạn tạo Blueprint từ repo GitHub.
-# `sync: false` = Render hỏi giá trị lúc deploy, KHÔNG lưu secret vào repo.
+# ═══════════════════════════════════════════════════════════════════
+# CP5 — Deploy lên Render
+# ═══════════════════════════════════════════════════════════════════
 
 services:
+
+  # ────────────────────────────────────────────────────────────────
+  # Agent Web Service
+  # ────────────────────────────────────────────────────────────────
   - type: web
     name: day12-agent
     runtime: docker
     dockerfilePath: ./Dockerfile
+
+    # Render Free plan
     plan: free
+
+    # Render dùng endpoint này để kiểm tra service còn hoạt động
     healthCheckPath: /health
+
+    # Environment variables
     envVars:
+
+      # Secret — Render sẽ hỏi khi deploy
       - key: AGENT_API_KEY
         sync: false
+
+      # Logging
       - key: LOG_LEVEL
         value: INFO
+
+      # Rate limit
       - key: RATE_LIMIT_PER_MINUTE
         value: "10"
+
+      # Monthly budget
       - key: MONTHLY_BUDGET_USD
         value: "10.0"
+
+      # Redis connection
       - key: REDIS_URL
         fromService:
           name: day12-redis
           type: redis
           property: connectionString
 
+
+  # ────────────────────────────────────────────────────────────────
+  # Redis
+  # ────────────────────────────────────────────────────────────────
   - type: redis
     name: day12-redis
     plan: free
+
+    # Cho phép Render Web Service kết nối tới Redis
     ipAllowList: []
